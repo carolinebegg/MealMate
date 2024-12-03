@@ -8,32 +8,35 @@
 import SwiftUI
 
 struct FridgeItemView: View {
-    let ingredient: Ingredient
+    @ObservedObject var ingredient: Ingredient
+    private let itemWidth = (UIScreen.main.bounds.width - 48) / 2 // 48 accounts for padding and spacing
+    private let itemHeight: CGFloat = 180
     
     var body: some View {
-        VStack {
+        VStack(spacing: 8) {
             Text(iconForIngredient(ingredient.name ?? ""))
-                .font(.system(size: 40))
+                .font(.system(size: 50))
             
-            VStack(spacing: 2) {
-                Text(ingredient.name ?? "Unknown")
+            Text(ingredient.name ?? "Unknown")
+                .font(.headline)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+            
+            Text(formattedQuantity(ingredient.quantity) + " " + (ingredient.unit ?? ""))
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            if let expirationDate = ingredient.expirationDate {
+                Text(expirationDate, style: .date)
                     .font(.caption)
-                    .lineLimit(1)
-                Text("\(String(format: "%.1f", ingredient.quantity)) \(ingredient.unit)")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                
-                if let expirationDate = ingredient.expirationDate {
-                    Text(expirationDate, format: .dateTime.month().day())
-                        .font(.caption2)
-                        .foregroundColor(isExpiringSoon(date: expirationDate) ? .orange : .secondary)
-                }
+                    .foregroundColor(isExpiringSoon(date: expirationDate) ? .orange : .secondary)
             }
         }
         .padding()
-        .background(Color.white)
+        .frame(width: itemWidth, height: itemHeight)
+        .background(Color(.systemBackground))
         .cornerRadius(15)
-        .shadow(radius: 3)
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
     }
     
     private func isExpiringSoon(date: Date) -> Bool {
@@ -41,32 +44,11 @@ struct FridgeItemView: View {
         return days <= 3 && days >= 0
     }
     
-    private func iconForIngredient(_ name: String) -> String {
-        let lowercasedName = name.lowercased()
-        
-        switch lowercasedName {
-        case let name where name.contains("milk"):
-            return "🥛"
-        case let name where name.contains("cheese"):
-            return "🧀"
-        case let name where name.contains("egg"):
-            return "🥚"
-        case let name where name.contains("butter"):
-            return "🧈"
-        case let name where name.contains("meat") || name.contains("chicken"):
-            return "🍗"
-        case let name where name.contains("fish") || name.contains("salmon"):
-            return "🐟"
-        case let name where name.contains("apple"):
-            return "🍎"
-        case let name where name.contains("carrot"):
-            return "🥕"
-        case let name where name.contains("lettuce"):
-            return "🥬"
-        case let name where name.contains("tomato"):
-            return "🍅"
-        default:
-            return "🥘"
+    private func formattedQuantity(_ quantity: Double) -> String {
+        if quantity.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f", quantity)
+        } else {
+            return String(format: "%.2f", quantity)
         }
     }
 }

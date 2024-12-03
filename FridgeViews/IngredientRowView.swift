@@ -6,42 +6,27 @@
 //
 
 import SwiftUI
-//
-//struct IngredientRowView: View {
-//    @ObservedObject var ingredient: Ingredient
-//    
-//    var body: some View {
-//        HStack {
-//            VStack(alignment: .leading, spacing: 4) {
-//                Text(ingredient.name ?? "Unnamed")
-//                if let expirationDate = ingredient.expirationDate {
-//                    Text("Expires: \(expirationDate.formatted(date: .abbreviated, time: .omitted))")
-//                        .font(.caption)
-//                        .foregroundColor(.secondary)
-//                }
-//            }
-//            Spacer()
-//        }
-//        .contentShape(Rectangle())
-//        .padding(.vertical, 4)
-//    }
-//}
+
 struct IngredientRowView: View {
     @ObservedObject var ingredient: Ingredient
     
     var body: some View {
         HStack {
+            Text(iconForIngredient(ingredient.name ?? ""))
+                .font(.largeTitle)
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text(ingredient.name ?? "Unnamed")
+                    .font(.headline)
                 HStack {
-                    Text("\(String(format: "%.1f", ingredient.quantity)) \(ingredient.unit ?? "unit")")
+                    Text(formattedQuantity(ingredient.quantity) + " " + (ingredient.unit ?? ""))
                         .foregroundColor(.secondary)
                         .font(.subheadline)
                     
                     if let expirationDate = ingredient.expirationDate {
                         Text("•")
                             .foregroundColor(.secondary)
-                        Text(expirationDate, format: .dateTime.month().day().year())
+                        Text(expirationDate, style: .date)
                             .foregroundColor(.secondary)
                             .font(.subheadline)
                     }
@@ -49,7 +34,14 @@ struct IngredientRowView: View {
             }
             Spacer()
         }
-        .contentShape(Rectangle())
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+    }
+    
+    private func formattedQuantity(_ quantity: Double) -> String {
+        if quantity.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f", quantity)
+        } else {
+            return String(format: "%.2f", quantity)
+        }
     }
 }
